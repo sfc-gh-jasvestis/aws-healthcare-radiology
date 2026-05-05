@@ -71,4 +71,5 @@ A Chief Radiologist discovers CT turnaround time has blown past SLA — averagin
 - [ ] Switch to Critical Findings — verify ~847 unacknowledged
 - [ ] Switch to Productivity — verify Dr. Tanaka at top
 - [ ] Test AI Summary extraction button
-- [ ] Open QuickSight, test Q: "What is the average TAT for CT?"
+- [ ] Open QuickSight: https://us-west-2.quicksight.aws.amazon.com/sn/dashboards/hc-radiology-dashboard
+- [ ] Test Q topic question: "What is the SLA breach rate for CT?"
