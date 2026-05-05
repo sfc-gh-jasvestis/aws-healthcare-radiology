@@ -1,0 +1,16 @@
+definition_version: 2
+entities:
+  radiology_app:
+    type: streamlit
+    identifier:
+      name: RADIOLOGY_ANALYTICS_APP
+      schema: APP
+      database: HEALTHCARE_RADIOLOGY
+    title: "Radiology Analytics Command Center"
+    comment: "Multi-page sidebar with TAT monitoring and critical findings"
+    query_warehouse: CORTEX
+    main_file: streamlit_app.py
+    stage: HEALTHCARE_RADIOLOGY.APP.STREAMLIT_STAGE
+    artifacts:
+      - streamlit_app.py
+      - environment.yml
