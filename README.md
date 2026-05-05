@@ -7,7 +7,7 @@ End-to-end healthcare radiology analytics platform built on Snowflake, demonstra
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         STREAMLIT APPLICATION                            │
-│   TAT Dashboard │ Critical Findings Queue │ Productivity │ Guidelines   │
+│   TAT Dashboard │ Critical Findings │ Productivity │ Forecast │ AI     │
 └───────────┬─────────────────┬──────────────────┬────────────────────────┘
             │                 │                  │
 ┌───────────▼─────────────────▼──────────────────▼────────────────────────┐

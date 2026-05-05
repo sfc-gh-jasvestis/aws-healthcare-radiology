@@ -9,7 +9,7 @@ session = get_active_session()
 
 st.set_page_config(page_title="Radiology Analytics", layout="wide", page_icon="🩻")
 
-page = st.sidebar.radio("Navigation", ["TAT Dashboard", "Critical Findings", "Productivity", "AI Summary", "Ask Radiology"], label_visibility="collapsed")
+page = st.sidebar.radio("Navigation", ["TAT Dashboard", "Critical Findings", "Productivity", "Forecast", "AI Summary", "Ask Radiology"], label_visibility="collapsed")
 st.sidebar.divider()
 st.sidebar.markdown("### Radiology Analytics")
 st.sidebar.caption("Multi-page app — TAT monitoring, critical findings queue, radiologist productivity")
@@ -33,11 +33,17 @@ if page == "TAT Dashboard":
     if not tat.empty:
         for col in ["AVG_TAT", "TOTAL_STUDIES", "BREACHES", "BREACH_PCT"]:
             tat[col] = pd.to_numeric(tat[col], errors="coerce")
+        sla_targets = {"CT": 120, "MRI": 180, "XR": 60, "US": 90, "NM": 120, "PET": 180}
         cols = st.columns(len(tat))
         for i, (_, row) in enumerate(tat.iterrows()):
             with cols[i]:
-                delta_color = "inverse" if row["AVG_TAT"] > 120 else "normal"
-                st.metric(row["MODALITY"], f"{row['AVG_TAT']:.0f} min", delta=f"{row['BREACH_PCT']:.1f}% breach")
+                sla = sla_targets.get(row["MODALITY"], 120)
+                over_pct = round((row["AVG_TAT"] - sla) / sla * 100, 0)
+                if row["AVG_TAT"] > sla:
+                    delta_str = f"{over_pct:.0f}% over SLA"
+                else:
+                    delta_str = f"within SLA"
+                st.metric(row["MODALITY"], f"{row['AVG_TAT']:.0f} min", delta=delta_str, delta_color="inverse" if row["AVG_TAT"] > sla else "normal")
         fig = px.bar(tat, x="MODALITY", y="AVG_TAT", color="BREACH_PCT", color_continuous_scale="OrRd",
                      title="Average TAT by Modality (minutes)")
         sla_targets = {"CT": 120, "MRI": 180, "XR": 60, "US": 90, "NM": 120, "PET": 180}
@@ -91,9 +97,11 @@ elif page == "Critical Findings":
 elif page == "Productivity":
     st.title("Radiologist Productivity")
     prod = session.sql("""
-        SELECT RADIOLOGIST_NAME, SUBSPECIALTY, DAILY_READS, AVG_TAT_MINUTES
+        SELECT RADIOLOGIST_NAME, SUBSPECIALTY,
+               ROUND(AVG(DAILY_READS), 1) AS DAILY_READS,
+               ROUND(AVG(AVG_TAT_MINUTES), 1) AS AVG_TAT_MINUTES
         FROM HEALTHCARE_RADIOLOGY.CURATED.RADIOLOGIST_PRODUCTIVITY
-        WHERE METRIC_DATE = (SELECT MAX(METRIC_DATE) FROM HEALTHCARE_RADIOLOGY.CURATED.RADIOLOGIST_PRODUCTIVITY)
+        GROUP BY RADIOLOGIST_NAME, SUBSPECIALTY
         ORDER BY DAILY_READS DESC
         LIMIT 20
     """).to_pandas()
@@ -113,7 +121,8 @@ elif page == "AI Summary":
             try:
                 report = session.sql("""
                     SELECT REPORT_TEXT FROM HEALTHCARE_RADIOLOGY.RAW.REPORTS
-                    WHERE STATUS = 'FINAL' ORDER BY FINALIZED_AT DESC LIMIT 1
+                    WHERE REPORT_TEXT ILIKE '%urgent%' OR REPORT_TEXT ILIKE '%critical%' OR REPORT_TEXT ILIKE '%tension%'
+                    ORDER BY FINALIZED_AT DESC LIMIT 1
                 """).collect()
                 if report:
                     text = report[0][0]
@@ -124,6 +133,41 @@ elif page == "AI Summary":
                     st.code(str(result)[:2000], language="json")
             except Exception as e:
                 st.error(f"Error: {e}")
+
+elif page == "Forecast":
+    st.title("TAT Forecast")
+    st.caption("Snowflake ML FORECAST — 30-day TAT prediction by modality with confidence intervals")
+    hist = session.sql("""
+        SELECT MODALITY AS SERIES, METRIC_DATE AS TS, AVG_TAT_MINUTES AS Y
+        FROM HEALTHCARE_RADIOLOGY.CURATED.TAT_METRICS
+        ORDER BY METRIC_DATE
+    """).to_pandas()
+    fcst = session.sql("""
+        SELECT SERIES, TS, FORECAST, LOWER_BOUND, UPPER_BOUND
+        FROM HEALTHCARE_RADIOLOGY.ML.TAT_FORECAST_RESULTS
+        ORDER BY TS
+    """).to_pandas()
+    if not hist.empty and not fcst.empty:
+        for col in ["Y"]:
+            hist[col] = pd.to_numeric(hist[col], errors="coerce")
+        for col in ["FORECAST", "LOWER_BOUND", "UPPER_BOUND"]:
+            fcst[col] = pd.to_numeric(fcst[col], errors="coerce")
+        fcst["SERIES"] = fcst["SERIES"].str.strip('"')
+        import plotly.graph_objects as go
+        modalities = st.multiselect("Modality", sorted(fcst["SERIES"].unique()), default=["CT", "MRI"])
+        for mod in modalities:
+            fig = go.Figure()
+            h = hist[hist["SERIES"] == mod]
+            f = fcst[fcst["SERIES"] == mod]
+            fig.add_trace(go.Scatter(x=h["TS"], y=h["Y"], mode="lines", name="Historical", line=dict(color="#636EFA")))
+            fig.add_trace(go.Scatter(x=f["TS"], y=f["FORECAST"], mode="lines", name="Forecast", line=dict(color="#EF553B", dash="dash")))
+            fig.add_trace(go.Scatter(x=f["TS"], y=f["UPPER_BOUND"], mode="lines", line=dict(width=0), showlegend=False))
+            fig.add_trace(go.Scatter(x=f["TS"], y=f["LOWER_BOUND"], mode="lines", line=dict(width=0), fill="tonexty", fillcolor="rgba(239,85,59,0.15)", name="95% CI"))
+            sla_targets = {"CT": 120, "MRI": 180, "XR": 60, "US": 90, "NM": 120, "PET": 180}
+            sla = sla_targets.get(mod, 120)
+            fig.add_hline(y=sla, line_dash="dot", line_color="green", annotation_text=f"SLA {sla}min")
+            fig.update_layout(title=f"{mod} — TAT Forecast (next 30 days)", height=350, margin=dict(t=40, b=10), yaxis_title="Minutes")
+            st.plotly_chart(fig, use_container_width=True)
 
 elif page == "Ask Radiology":
     st.title("Ask the Data")
