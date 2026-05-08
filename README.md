@@ -1,6 +1,6 @@
 # Radiology Analytics & Medical NLP
 
-End-to-end healthcare radiology analytics platform built on Snowflake, demonstrating turnaround time monitoring, critical findings management, AI-powered report extraction, and ML forecasting.
+End-to-end healthcare radiology analytics platform — turnaround time monitoring, critical findings management, AI-powered report extraction, and ML forecasting for capacity planning.
 
 ## Architecture
 
@@ -21,15 +21,14 @@ flowchart LR
     DT --> QS[QuickSight TAT + Critical Findings + Amazon Q]
 ```
 
-
 ## Personas
 
 | Persona | Role | Key Questions |
 |---------|------|---------------|
-| **Chief Radiologist** | Dr. Tanaka — oversees 50 radiologists, monitors TAT SLAs, manages critical findings | "Which modalities are breaching SLA?" "Show unacknowledged critical findings." "What does the guideline say about contrast protocols?" |
-| **Hospital COO** | Operations executive — tracks department KPIs, forecasts capacity, identifies bottlenecks | "Forecast CT volume next 30 days." "Which radiologists are below productivity targets?" "Are there anomalies in our TAT trends?" |
+| **Dr. Tanaka** | Chief Radiologist — oversees 50 radiologists | "Which modalities are breaching SLA?" "Show unacknowledged critical findings." |
+| **Hospital COO** | Operations executive — tracks department KPIs | "Forecast CT volume next 30 days." "Which radiologists are below productivity targets?" |
 
-## Data Scale
+## Data
 
 | Table | Rows | Description |
 |-------|------|-------------|
@@ -40,27 +39,17 @@ flowchart LR
 | EQUIPMENT | 30 | Scanners and imaging devices |
 | RADIOLOGY_GUIDELINES | 80 | Clinical guidelines for Cortex Search |
 
-## Capabilities
-
-1. **Turnaround Time Monitoring** — Real-time TAT by modality with SLA breach detection (CT averages 285min vs 120min SLA)
-2. **Critical Findings Queue** — 847 unacknowledged critical findings prioritized by severity and age
-3. **AI Report Extraction** — Cortex COMPLETE extracts structured findings (anatomy, severity, recommendations) from free-text reports
-4. **Productivity Analytics** — Per-radiologist daily reads and TAT (Dr. Tanaka: 45 reads/day)
-5. **ML Forecast** — Time-series forecast of TAT by modality for capacity planning
-6. **Anomaly Detection** — Automated detection of unusual TAT spikes across modalities
-7. **Guidelines Search** — Cortex Search over 80 radiology clinical guidelines
-8. **Conversational Agent** — Red-themed Cortex Agent combining analyst + search tools
-
-## Demo Narrative
-
-The demo centers on **CT turnaround time crisis**: CT studies average 285 minutes (SLA is 120 minutes), with 847 critical findings unacknowledged. The Chief Radiologist uses the agent to investigate root causes, discovering that evening shift coverage is insufficient and specific scanners have higher failure rates. The COO uses ML forecasts to justify hiring 3 additional radiologists and adding a second CT scanner, projecting ROI through reduced SLA breaches.
-
 ## Build Instructions
 
-```bash
-# Prerequisites: Snowflake account with ACCOUNTADMIN, AWS account with S3/Bedrock/QuickSight
+### Prerequisites
+- Snowflake account with ACCOUNTADMIN access
+- Cortex AI enabled (ML Functions, Search, Agent)
+- Warehouse: CORTEX (Medium)
+- AWS CLI with Bedrock, QuickSight access
 
-# 1. Deploy Snowflake objects (run in order)
+### Deployment
+
+```bash
 snowsql -f snowflake/00_setup.sql
 snowsql -f snowflake/01_integrations.sql
 snowsql -f snowflake/02_raw_tables.sql
@@ -70,26 +59,20 @@ snowsql -f snowflake/05_ml.sql
 snowsql -f snowflake/06_semantic.sql
 snowsql -f snowflake/07_agent.sql
 snowsql -f snowflake/08_ai_extraction.sql
-
-# 2. Deploy QuickSight resources
-chmod +x quicksight/deploy.sh
-./quicksight/deploy.sh
-
-# 3. Deploy Streamlit app
-snow streamlit deploy --database HEALTHCARE_RADIOLOGY --schema APP
 ```
 
-## Tear Down
-
-```bash
-# Remove AWS resources
-chmod +x aws/teardown.sh
-./aws/teardown.sh
-
-# Remove Snowflake objects
-snow sql -q "DROP DATABASE IF EXISTS HEALTHCARE_RADIOLOGY CASCADE;"
+### Streamlit App
 ```
+HEALTHCARE_RADIOLOGY.APP.RADIOLOGY_ANALYTICS_APP
+```
+
+## Key Demo Numbers
+
+- **CT turnaround** averages 285 minutes (SLA is 120 minutes)
+- **847 critical findings** unacknowledged
+- **Dr. Tanaka** — 45 reads/day (top performer)
+- **ML forecast** justifies hiring 3 additional radiologists
 
 ## License
 
-Apache 2.0
+Apache 2.0 — See [LICENSE](LICENSE) for details.
