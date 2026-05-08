@@ -4,39 +4,23 @@ End-to-end healthcare radiology analytics platform built on Snowflake, demonstra
 
 ## Architecture
 
+A radiology analytics and medical NLP platform built on **Snowflake** (Dynamic Tables, ML.FORECAST, ML.ANOMALY_DETECTION, Cortex Search, semantic view, Cortex Agent) and **AWS** (S3, Bedrock Claude, QuickSight + Amazon Q). Studies and reports land in S3; Bedrock extracts critical findings; Snowflake monitors TAT, productivity, and forecasts modality volume.
+
+```mermaid
+flowchart LR
+    S3[S3 sg-healthcare-demos-2026 / radiology] --> SF[Snowflake RAW STUDIES / REPORTS / RADIOLOGISTS / CRITICAL_FINDINGS / EQUIPMENT / GUIDELINES]
+    SF --> EAI[External Access SigV4]
+    EAI --> BR[Amazon Bedrock Claude report extraction]
+    BR --> SF
+    SF --> DT[Dynamic Tables TAT_METRICS / CRITICAL_FINDINGS_QUEUE / RADIOLOGIST_PRODUCTIVITY]
+    DT --> ML[ML.FORECAST + ML.ANOMALY_DETECTION]
+    DT --> CSearch[Cortex Search guidelines]
+    DT --> SemView[Semantic View]
+    DT --> AGT[Cortex Agent RadiologyAnalyst + GuidelinesSearch]
+    DT --> ST[Streamlit TAT / Critical Findings / Productivity / Forecast / AI]
+    DT --> QS[QuickSight TAT + Critical Findings + Amazon Q]
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         STREAMLIT APPLICATION                            │
-│   TAT Dashboard │ Critical Findings │ Productivity │ Forecast │ AI     │
-└───────────┬─────────────────┬──────────────────┬────────────────────────┘
-            │                 │                  │
-┌───────────▼─────────────────▼──────────────────▼────────────────────────┐
-│                        CORTEX AGENT (Red)                                │
-│         RadiologyAnalyst Tool  +  GuidelinesSearch Tool                  │
-└───────────┬─────────────────┬──────────────────┬────────────────────────┘
-            │                 │                  │
-┌───────────▼─────┐ ┌────────▼────────┐ ┌──────▼──────────────────────────┐
-│  SEMANTIC VIEW  │ │  CORTEX SEARCH  │ │  ML MODELS                      │
-│  (3 DTs)        │ │  (Guidelines)   │ │  Forecast + Anomaly Detection   │
-└───────────┬─────┘ └────────┬────────┘ └──────┬──────────────────────────┘
-            │                 │                  │
-┌───────────▼─────────────────▼──────────────────▼────────────────────────┐
-│                      DYNAMIC TABLES (Curated)                           │
-│   TAT_METRICS  │  CRITICAL_FINDINGS_QUEUE  │  RADIOLOGIST_PRODUCTIVITY  │
-└───────────┬─────────────────┬──────────────────┬────────────────────────┘
-            │                 │                  │
-┌───────────▼─────────────────▼──────────────────▼────────────────────────┐
-│                         RAW SCHEMA                                       │
-│  STUDIES │ REPORTS │ RADIOLOGISTS │ CRITICAL_FINDINGS │ EQUIPMENT │ GUIDELINES │
-└───────────┬─────────────────────────────────────────────────────────────┘
-            │
-┌───────────▼─────────────────────────────────────────────────────────────┐
-│                    AWS INTEGRATION                                       │
-│   S3 Stage (sg-healthcare-demos-2026/radiology/)                        │
-│   Bedrock EAI (Report Extraction)                                       │
-│   QuickSight (TAT + Critical Findings Datasets, Q Topic)                │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+
 
 ## Personas
 
