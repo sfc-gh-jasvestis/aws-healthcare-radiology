@@ -21,6 +21,26 @@ flowchart LR
     DT --> QS[QuickSight TAT + Critical Findings + Amazon Q]
 ```
 
+## Snowflake Capabilities
+
+| Capability | Implementation |
+|-----------|---------------|
+| Dynamic Tables | TAT_METRICS / CRITICAL_FINDINGS_QUEUE / RADIOLOGIST_PRODUCTIVITY |
+| ML Functions | ML.FORECAST modality volume + ML.ANOMALY_DETECTION TAT outliers |
+| Cortex Search | 80 radiology clinical guidelines indexed |
+| Cortex Agent | RadiologyAnalyst + GuidelinesSearch tools |
+| Semantic View | Structured analytics over TAT, findings, productivity |
+| Streamlit | 6-page dashboard: TAT / Critical / Productivity / Forecast / AI / Ask |
+
+## AWS Services
+
+| Service | Role in Demo |
+|---------|-------------|
+| Amazon S3 | Storage for radiology studies and report feeds |
+| Amazon Bedrock | Claude-powered report extraction and NLP analysis |
+| Amazon QuickSight | Executive TAT and critical findings dashboard |
+| Amazon Q | Natural language analytics for Hospital COO |
+
 ## Personas
 
 | Persona | Role | Key Questions |
