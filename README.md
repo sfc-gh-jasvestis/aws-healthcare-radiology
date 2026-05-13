@@ -86,6 +86,14 @@ snowsql -f snowflake/08_ai_extraction.sql
 HEALTHCARE_RADIOLOGY.APP.RADIOLOGY_ANALYTICS_APP
 ```
 
+## Build Modes
+
+### Snowflake Only
+Run the SQL scripts in `snowflake/` (skip `01_integrations.sql`) and deploy the Streamlit app from `streamlit/deploy/`. Uses Cortex AI instead of Bedrock, and Snowflake Intelligence instead of QuickSight.
+
+### Full AWS + Snowflake
+Run all SQL scripts including `01_integrations.sql`, deploy the main Streamlit app from `streamlit/`, then run the QuickSight setup from `quicksight/`.
+
 ## Key Demo Numbers
 
 - **CT turnaround** averages 285 minutes (SLA is 120 minutes)
