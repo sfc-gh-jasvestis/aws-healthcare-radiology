@@ -94,6 +94,14 @@ Run the SQL scripts in `snowflake/` (skip `01_integrations.sql`) and deploy the 
 ### Full AWS + Snowflake
 Run all SQL scripts including `01_integrations.sql`, deploy the main Streamlit app from `streamlit/`, then run the QuickSight setup from `quicksight/`.
 
+## Business Impact
+
+Industry research and Snowflake customer outcomes:
+- **AI-assisted radiology** reduces report turnaround time by 30-50% -- Multiple peer-reviewed studies
+- **Unread study backlogs** cost hospitals $1.5M/year in delayed diagnoses and liability -- ACR estimates
+- **Critical finding notification time** reduced 60% with AI prioritization -- Industry benchmark
+- **ML forecasting** enables proactive staffing decisions, reducing overtime costs 20-30% -- Industry
+
 ## Key Demo Numbers
 
 - **CT turnaround** averages 285 minutes (SLA is 120 minutes)
@@ -104,3 +112,5 @@ Run all SQL scripts including `01_integrations.sql`, deploy the main Streamlit a
 ## License
 
 Apache 2.0 — See [LICENSE](LICENSE) for details.
+
+This is a personal demo project and is not an official Snowflake offering. It comes with no support or warranty. Industry metrics cited are from publicly available third-party research and Snowflake customer stories; they represent reported outcomes and are not guarantees of results.
