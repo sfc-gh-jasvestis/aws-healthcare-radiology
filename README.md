@@ -101,6 +101,7 @@ Industry research and Snowflake customer outcomes:
 - **Unread study backlogs** cost hospitals $1.5M/year in delayed diagnoses and liability -- ACR estimates
 - **Critical finding notification time** reduced 60% with AI prioritization -- Industry benchmark
 - **ML forecasting** enables proactive staffing decisions, reducing overtime costs 20-30% -- Industry
+- **AMN Healthcare** reduced data lake costs by 93% ($2.2M/year savings) while storing 50% more data on Snowflake -- snowflake.com/customers
 
 ## Key Demo Numbers
 
